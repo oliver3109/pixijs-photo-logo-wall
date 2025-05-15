@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@7/dist/pixi.min.js"></script>
+    <style>
+      *,
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      const canvasWidth = window.innerWidth;
+      const canvasHeight = window.innerHeight;
+
+      // 设定
+      const rowCount = 4; // 行数
+      const colCount = 10; // 列数
+
+      const colWidth = Math.floor(canvasWidth / colCount); // 每行的宽度
+      const rowHeigh = Math.floor(canvasHeight / rowCount); // 每行的宽度
+
+      // 初始化 PIXI 应用
+      const app = new PIXI.Application({
+        width: canvasWidth,
+        height: canvasHeight,
+        backgroundColor: 0x0,
+      });
+      document.body.appendChild(app.view);
+
+      // 使用 Unsplash API 随机获取图片
+      // 使用本地图片作为替代
+      const imageURLs = [
+        "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NDcyOTc1Nzh8&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1531384441138-2736e62e0919?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NDcyOTc1Nzh8&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1592621385612-4d7129426394?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NDcyOTc1Nzh8&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1516195851888-6f1a981a862e?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NDcyOTc2MTV8&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NDcyOTc2MTV8&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1580489944761-15a19d654956?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NDcyOTc2MzN8&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NDcyOTc2MzN8&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NDcyOTc2MzN8&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NDcyOTc2MzN8&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1544717305-2782549b5136?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NDcyOTc2Njh8&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NDcyOTc2Njh8&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1560250097-0b93528c311a?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NDcyOTc2ODB8&ixlib=rb-4.1.0&q=85"
+      ];
+
+      const canvas = document.createElement("canvas");
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+      const ctx = canvas.getContext("2d");
+
+      function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function loadImage(url) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.src = url;
+        });
+      }
+
+      function loadImages(urls) {
+        return Promise.all(
+          urls.map((url) => {
+            return new Promise((resolve) => {
+              const img = new Image();
+              img.crossOrigin = "anonymous";
+              img.onload = () => resolve(img);
+              img.src = url;
+            });
+          })
+        );
+      }
+
+      loadImages(imageURLs).then(async (images) => {
+        const cols = Math.ceil(canvasWidth / colWidth);
+        const rows = Math.ceil(canvasHeight / rowHeigh);
+        const total = cols * rows;
+
+        // 把图片绘制到大 canvas 上
+        for (let i = 0; i < total; i++) {
+          const x = (i % cols) * colWidth;
+          const y = Math.floor(i / cols) * rowHeigh;
+          const img = images[i % images.length];
+          ctx.drawImage(img, x, y, colWidth, rowHeigh);
+        }
+
+        const logoImage = await loadImage("logo.png");
+        ctx.drawImage(
+          logoImage,
+          0,
+          0,
+          logoImage.width,
+          logoImage.height,
+          0,
+          0,
+          canvasWidth,
+          canvasHeight
+        );
+
+        const animators = [];
+        // 添加动画控制器类
+        class SpriteAnimator {
+          constructor(sprite, canvasWidth, canvasHeight, index) {
+            this.index = index;
+            this.sprite = sprite;
+            this.canvasWidth = canvasWidth;
+            this.canvasHeight = canvasHeight;
+            this.time = 0;
+            this.phase = 0;
+            this.phaseDuration = 600;
+            this.totalPhases = 5;
+            this.swapPartner = null;
+            this.isSwapping = false;
+
+            // 添加状态控制
+            this.isReturning = false;
+            this.waitTime = 0;
+            this.waitDuration = 160; // 等待60帧，约1秒
+
+            // 为每个精灵设置随机初始参数
+            this.params = {
+              spiralSpeed: 0.01 + Math.random() * 0.03,
+              waveAmplitude: 2 + Math.random() * 2,
+              waveFrequency: 0.08 + Math.random() * 0.04,
+              rotationSpeed: 0.01 + Math.random() * 0.02,
+              bounceHeight: 15 + Math.random() * 10,
+              swapSpeed: 0.05 + Math.random() * 0.05,
+            };
+          }
+
+          update(delta) {
+            this.time += delta;
+
+            if (this.isReturning) {
+              // 正在归位
+              const finished = this._returnToPosition(delta);
+              this.waitTime += delta;
+              if (finished) {
+                if (this.waitTime >= this.waitDuration) {
+                  // 等待结束，进入下一阶段
+                  this.isReturning = false;
+                  this.waitTime = 0;
+                  this.phase++;
+                  if (this.phase >= this.totalPhases) {
+                    this.phase = 0; // 循环播放所有动画
+                  }
+                }
+                return;
+              }
+            } else {
+              // 检查是否需要开始归位
+              const currentPhaseDuration = this.time % this.phaseDuration;
+              if (currentPhaseDuration >= this.phaseDuration - 60) {
+                // 当前阶段即将结束
+                this.isReturning = true;
+                return;
+              }
+
+              // 执行当前阶段动画
+              switch (this.phase) {
+                case 0:
+                  this.spiralAnimation(delta);
+                  break;
+                case 1:
+                  this.waveAnimation(delta);
+                  break;
+                case 2:
+                  this.squareAnimation(delta);
+                  break;
+                case 3:
+                  this.swapAnimation(delta);
+                  break;
+                case 4:
+                  this.returnToPosition(delta);
+                  break;
+              }
+            }
+          }
+
+          _returnToPosition(delta) {
+            const targetX = this.sprite._x;
+            const targetY = this.sprite._y;
+            const dx = targetX - this.sprite.x;
+            const dy = targetY - this.sprite.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 0.1) {
+              this.sprite.x = targetX;
+              this.sprite.y = targetY;
+              this.sprite.rotation = 0;
+              this.sprite.scale.set(1);
+              return true; // 归位完成
+            }
+
+            this.sprite.rotation *= 0.095;
+            this.sprite.scale.set(1);
+            this.sprite.x += dx * 0.05 * delta;
+            this.sprite.y += dy * 0.05 * delta;
+            return false; // 还在归位中
+          }
+
+          returnToPosition(delta) {
+            const targetX = this.sprite._targetX;
+            const targetY = this.sprite._targetY;
+            const dx = targetX - this.sprite.x;
+            const dy = targetY - this.sprite.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 0.1) {
+              this.sprite.x = targetX;
+              this.sprite.y = targetY;
+              this.sprite.rotation = 0;
+              this.sprite.scale.set(1);
+              return true; // 归位完成
+            }
+
+            this.sprite.rotation *= 0.095;
+            this.sprite.scale.set(1);
+            this.sprite.x += dx * 0.1 * delta;
+            this.sprite.y += dy * 0.1 * delta;
+            return false; // 还在归位中
+          }
+
+          spiralAnimation(delta) {
+            this.sprite.scale;
+            const scale =
+              0.618 +
+              Math.abs(Math.sin(0.1 + (this.time + this.index / 0.618) / 50));
+            this.sprite.scale.set(Math.min(scale, 1));
+          }
+
+          waveAnimation(delta) {
+            const wave = Math.sin(this.time * this.params.waveFrequency);
+            this.sprite.y += wave * this.params.waveAmplitude * 1;
+            this.sprite.x += Math.cos(this.time * 0.1) * 3;
+            this.sprite.rotation = wave * 0.05;
+          }
+
+          squareAnimation(delta) {
+            const t = (this.time + this.index) * 0.05;
+            const size = 50;
+
+            if (t % 4 < 1) this.sprite.x += size * 0.1 * delta;
+            else if (t % 4 < 2) this.sprite.y += size * 0.1 * delta;
+            else if (t % 4 < 3) this.sprite.x -= size * 0.1 * delta;
+            else this.sprite.y -= size * 0.1 * delta;
+
+            // this.sprite.rotation += this.params.rotationSpeed * delta;
+          }
+
+          // 添加新的交换动画方法
+          swapAnimation(delta) {
+            if (!this.isSwapping && Math.random() < 0.01) {
+              // 1% 的概率开始交换
+              // 随机选择一个交换伙伴
+              const allAnimators = animators.filter(
+                (a) => a !== this && !a.isSwapping
+              );
+              if (allAnimators.length > 0) {
+                this.swapPartner =
+                  allAnimators[Math.floor(Math.random() * allAnimators.length)];
+                this.isSwapping = true;
+                this.swapPartner.isSwapping = true;
+                this.swapPartner.swapPartner = this;
+              }
+            }
+
+            if (this.isSwapping && this.swapPartner) {
+              // 使用正弦函数创建平滑的交换动画
+              const progress = (this.time % 150) / 150; // 50帧完成一次交换
+              const ease = (1 - Math.cos(progress * Math.PI)) / 2;
+
+              // 计算当前位置
+              this.sprite.x =
+                this.sprite.offsetX +
+                (this.swapPartner.sprite.offsetX - this.sprite.offsetX) * ease;
+              this.sprite.y =
+                this.sprite.offsetY +
+                (this.swapPartner.sprite.offsetY - this.sprite.offsetY) * ease;
+
+              // 添加一些旋转效果
+              this.sprite.rotation = Math.sin(progress * Math.PI * 2) * 0.2;
+
+              // 交换完成后重置状态
+              if (progress >= 0.99) {
+                const tempX = this.sprite.offsetX;
+                const tempY = this.sprite.offsetY;
+                this.sprite.offsetX = this.swapPartner.sprite.offsetX;
+                this.sprite.offsetY = this.swapPartner.sprite.offsetY;
+                this.swapPartner.sprite.offsetX = tempX;
+                this.swapPartner.sprite.offsetY = tempY;
+
+                this.isSwapping = false;
+                this.swapPartner.isSwapping = false;
+                this.swapPartner = null;
+              }
+            }
+          }
+        }
+
+        // 切割 canvas 为多个 texture
+        const textures = [];
+        // 创建所有可能的位置数组
+        const positions = [];
+        for (let y = 0; y <= canvasHeight; y += rowHeigh) {
+          for (let x = 0; x <= canvasWidth; x += colWidth) {
+            if (canvasWidth - x < colWidth || canvasHeight - y < rowHeigh) {
+              continue;
+            }
+            positions.push({ x, y });
+          }
+        }
+
+        // Fisher-Yates 洗牌算法打乱位置数组
+        for (let i = positions.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [positions[i], positions[j]] = [positions[j], positions[i]];
+        }
+
+        let positionIndex = 0;
+        for (let y = 0; y <= canvasHeight; y += rowHeigh) {
+          for (let x = 0; x <= canvasWidth; x += colWidth) {
+            if (canvasWidth - x < colWidth || canvasHeight - y < rowHeigh) {
+              continue;
+            }
+            const tileCanvas = document.createElement("canvas");
+            tileCanvas.width = colWidth;
+            tileCanvas.height = rowHeigh;
+            const tileCtx = tileCanvas.getContext("2d");
+            tileCtx.drawImage(
+              canvas,
+              x,
+              y,
+              colWidth,
+              rowHeigh,
+              0,
+              0,
+              colWidth,
+              rowHeigh
+            );
+
+            const texture = PIXI.Texture.from(tileCanvas);
+            textures.push(texture);
+
+            const sprite = new PIXI.Sprite(texture);
+            // 使用打乱后的位置数组中的值
+            const randomPosition = positions[positionIndex];
+            sprite.x = randomPosition.x; // 当前位置
+            sprite._x = randomPosition.x; // 记录混乱的初始位置
+            sprite.offsetX = sprite.x;
+            sprite.y = randomPosition.y; // 当前位置
+            sprite._y = randomPosition.y; // 记录混乱的初始位置
+            sprite.offsetY = sprite.y;
+
+            sprite._targetX = x;
+            sprite._targetY = y;
+
+            app.stage.addChild(sprite);
+
+            // 为每个精灵创建动画控制器
+            animators.push(
+              new SpriteAnimator(
+                sprite,
+                canvasWidth,
+                canvasHeight,
+                positionIndex
+              )
+            );
+
+            positionIndex++;
+          }
+        }
+
+        // textures 里现在保存了所有小格子的 PIXI.Texture 对象
+        console.log("✅ 分割纹理数量:", textures.length);
+
+        // 动画缓动回目标位置
+        app.ticker.add((delta) => {
+          animators.forEach((animator) => animator.update(delta));
+        });
+      });
+    </script>
+  </body>
+</html>
